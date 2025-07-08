@@ -18,6 +18,7 @@ PIP_PACKAGES=(
 NODES=(
     #"https://github.com/ltdrdata/ComfyUI-Manager"
     #"https://github.com/cubiq/ComfyUI_essentials"
+    #"https://github.com/crystian/ComfyUI-Crystools"
 )
 
 WORKFLOWS=(
@@ -33,7 +34,12 @@ UNET_MODELS=(
 )
 
 VAE_MODELS=(
+   "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/blob/main/split_files/vae/ae.safetensors"
 )
+
+DIFFUSION_MODELS=(
+   "https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/blob/main/flux1-kontext-dev.safetensors"
+   )
 
 ### DO NOT EDIT BELOW HERE UNLESS YOU KNOW WHAT YOU ARE DOING ###
 
@@ -49,7 +55,7 @@ function provisioning_start() {
         "${WORKFLOWS[@]}"
     # Get licensed models if HF_TOKEN set & valid
     if provisioning_has_valid_hf_token; then
-        UNET_MODELS+=("https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors")
+        UNET_MODELS+=("https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/blob/main/flux1-kontext-dev.safetensors")
         VAE_MODELS+=("https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors")
     else
         UNET_MODELS+=("https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/flux1-schnell.safetensors")
@@ -177,49 +183,4 @@ function provisioning_download() {
 if [[ ! -f /.noprovisioning ]]; then
     provisioning_start
 fi
-
-function user_custom_provisioning() {
-    echo "🔧 Running user-custom provisioning steps..."
-
-    # LoRA download
-    echo "📥 Downloading JD3 Nudify LoRA..."
-    mkdir -p "${COMFYUI_DIR}/models/loras"
-    wget --header="Authorization: Bearer $HF_TOKEN" \
-        -O "${COMFYUI_DIR}/models/loras/JD3s_Nudify_Kontext.safetensors" \
-        https://huggingface.co/JD3GEN/JD3_Nudify_Kontext_LoRa/resolve/main/JD3s_Nudify_Kontext.safetensors
-    du -h "${COMFYUI_DIR}/models/loras/JD3s_Nudify_Kontext.safetensors"
-
-    # Extra custom nodes
-    echo "🧩 Cloning additional custom nodes..."
-    extra_nodes=(
-        "https://huggingface.co/FluxML/comfyui-flux-lora-loader"
-        "https://github.com/VerisimilitudeX/ComfyUI-TeaSeg"
-        "https://github.com/toriato/ComfyUI-CLIPSeg"
-        "https://github.com/ltdrdata/ComfyUI-Segment-Anything"
-        "https://github.com/Fannovel16/comfyui_controlnet_aux"
-        "https://github.com/crystian/ComfyUI-Crystal-Tools"
-        "https://github.com/rgthree/rgthree-comfy"
-    )
-    for repo in "${extra_nodes[@]}"; do
-        dir="${repo##*/}"
-        path="${COMFYUI_DIR}/custom_nodes/${dir}"
-        if [[ ! -d $path ]]; then
-            git clone "$repo" "$path"
-            if [[ -f $path/requirements.txt ]]; then
-                pip install --no-cache-dir -r "$path/requirements.txt"
-            fi
-        fi
-    done
-
-    # Python packages
-    echo "🐍 Installing xformers and SageAttention..."
-    pip install --no-cache-dir xformers
-    pip install --no-cache-dir git+https://github.com/THU-ML/SageAttention.git
-}
-
-# Run default provisioning
-provisioning_start
-
-# Run user custom provisioning (append this call)
-user_custom_provisioning
 

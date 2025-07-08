@@ -24,12 +24,12 @@ mkdir -p "$DIFFUSION_DIR" "$LORAS_DIR" "$CUSTOM_DIR"
 ##########################
 
 echo "📥 Downloading FLUX.1 Kontext model..."
-wget --header="Authorization: Bearer $HF_TOKEN" \
-  -O "$DIFFUSION_DIR/flux1-kontext-dev.safetensors" \
+curl -L --fail -H "Authorization: Bearer $HF_TOKEN" \
+  -o "$DIFFUSION_DIR/flux1-kontext-dev.safetensors" \
   https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-kontext-dev.safetensors
 
 echo "📥 Downloading JD3 Nudify Kontext LoRA..."
-wget --header="Authorization: Bearer $HF_TOKEN" \
+curl -L --fail -H "Authorization: Bearer $HF_TOKEN" \
   -O "$LORAS_DIR/JD3s_Nudify_Kontext.safetensors" \
   https://huggingface.co/JD3GEN/JD3_Nudify_Kontext_LoRa/resolve/main/JD3s_Nudify_Kontext.safetensors
 

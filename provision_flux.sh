@@ -2,18 +2,18 @@
 # Diff Models
 cd /workspace/ComfyUI/models/diffusion_models/
 
-wget --header="Authorization: Bearer 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" \
+wget --header="Authorization: Bearer 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" \
 https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-kontext-dev.safetensors 
 
 
-wget --header="Authorization: Bearer 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" \
+wget --header="Authorization: Bearer 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" \
 https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-dev-kontext_fp8_scaled.safetensors
 
 
 # Loras
 cd /workspace/ComfyUI/models/loras/
 
-wget --header="Authorization: Bearer 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" \
+wget --header="Authorization: Bearer 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" \
 https://huggingface.co/JD3GEN/JD3_Nudify_Kontext_LoRa/resolve/main/JD3s_Nudify_Kontext.safetensors
 
 # Custom Nodes
@@ -26,8 +26,10 @@ git clone https://github.com/rgthree/rgthree-comfy.git
 
 # VAE
 
-wget --header="Authorization: Bearer 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" \
+cd /workspace/ComfyUI/models/vae
 
-https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/ae.safetensors \
+wget https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors \
 -O /workspace/ComfyUI/models/vae/ae.safetensors
+
+
 

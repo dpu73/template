@@ -1,46 +1,31 @@
-#!/bin/bash
-set -eo pipefail
-exec > >(tee -a /workspace/provision_log.txt) 2>&1
-set -x
 
-# Activate environment
-source /venv/main/bin/activate
+# Diff Models
+cd /workspace/ComfyUI/models/diffusion_models/
 
-# Set paths
-COMFY_DIR="/workspace/ComfyUI"
-MODELS_DIR="$COMFY_DIR/models"
-DIFFUSION_DIR="$MODELS_DIR/diffusion_models"
-LORAS_DIR="$MODELS_DIR/loras"
-CUSTOM_DIR="$COMFY_DIR/custom_nodes"
+wget --header="Authorization: Bearer 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" \
 
-# Set HuggingFace token (update if needed)
-export HF_TOKEN="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"
+https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-kontext-dev.safetensors
+https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-dev-kontext_fp8_scaled.safetensors
 
-# Make sure all directories exist
-mkdir -p "$DIFFUSION_DIR" "$LORAS_DIR" "$CUSTOM_DIR"
 
-##########################
-# DOWNLOAD MODELS
-##########################
+# Loras
+cd /workspace/ComfyUI/models/loras/
 
-echo "📥 Downloading FLUX.1 Kontext model..."
-curl -L --fail -H "Authorization: Bearer $HF_TOKEN" \
-  -o "$DIFFUSION_DIR/flux1-kontext-dev.safetensors" \
-  https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-kontext-dev.safetensors
+wget --header="Authorization: Bearer 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" \
+https://huggingface.co/JD3GEN/JD3_Nudify_Kontext_LoRa/resolve/main/JD3s_Nudify_Kontext.safetensors
 
-echo "📥 Downloading JD3 Nudify Kontext LoRA..."
-curl -L --fail -H "Authorization: Bearer $HF_TOKEN" \
-  -O "$LORAS_DIR/JD3s_Nudify_Kontext.safetensors" \
-  https://huggingface.co/JD3GEN/JD3_Nudify_Kontext_LoRa/resolve/main/JD3s_Nudify_Kontext.safetensors
+# Custom Nodes
 
-##########################
-# INSTALL CUSTOM NODES
-##########################
+cd /workspace/ComfyUI/custom_nodes
 
-echo "🔌 Installing Crystools..."
-git clone https://github.com/crystian/ComfyUI-Crystools "$CUSTOM_DIR/ComfyUI-Crystools"
+git clone https://github.com/crystian/ComfyUI-Crystools.git
 
-echo "🔌 Installing RGThree tools..."
-git clone https://github.com/rgthree/rgthree-comfy "$CUSTOM_DIR/rgthree-comfy"
+git clone https://github.com/rgthree/rgthree-comfy.git
 
-echo "✅ Done provisioning Flux+Kontext environment."
+# VAE
+
+wget --header="Authorization: Bearer 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" \
+
+https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/ae.safetensors \
+-O /workspace/ComfyUI/models/vae/ae.safetensors
+

@@ -14,7 +14,7 @@ LORAS_DIR="$MODELS_DIR/loras"
 CUSTOM_DIR="$COMFY_DIR/custom_nodes"
 
 # Set HuggingFace token (update if needed)
-HF_TOKEN="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"
+export HF_TOKEN="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"
 
 # Make sure all directories exist
 mkdir -p "$DIFFUSION_DIR" "$LORAS_DIR" "$CUSTOM_DIR"

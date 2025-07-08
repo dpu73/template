@@ -13,10 +13,10 @@ CUSTOM="$ROOT/custom_nodes"
 
 mkdir -p "$MODELS/diffusion_models" "$MODELS/vae" "$MODELS/clip" "$MODELS/loras" "$CUSTOM"
 
-echo "📥 Downloading Flux Kontext model..."
-curl --fail -L -H "Authorization: Bearer $HF_TOKEN" \
+echo "📥 Downloading Flux Kontext model via wget..."
+wget --header="Authorization: Bearer $HF_TOKEN" \
   https://huggingface.co/FluxML/flux-1-kontext-dev/resolve/main/flux-1-kontext-dev.safetensors \
-  -o "$MODELS/diffusion_models/flux-1-kontext-dev.safetensors"
+  -O "$MODELS/diffusion_models/flux-1-kontext-dev.safetensors"
 du -h "$MODELS/diffusion_models/flux-1-kontext-dev.safetensors"
 
 echo "📥 Downloading VAE..."

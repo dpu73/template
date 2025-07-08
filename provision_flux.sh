@@ -4,7 +4,7 @@ cd /workspace/ComfyUI/models/diffusion_models/
 
 wget --header="Authorization: Bearer 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" \
 
-https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-kontext-dev.safetensors
+https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-kontext-dev.safetensors \
 https://huggingface.co/black-forest-labs/FLUX.1-Kontext-dev/resolve/main/flux1-dev-kontext_fp8_scaled.safetensors
 
 

@@ -1,72 +1,70 @@
 #!/bin/bash
 set -eo pipefail
+exec > >(tee -a /workspace/provision_log.txt) 2>&1
 
 echo "🛠️ Starting full provisioning script for Flux Kontext + ComfyUI"
 
-# Activate Python virtual environment
 source /venv/main/bin/activate
 
-# Set HuggingFace token (readonly)
 HF_TOKEN="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"
-
-# Paths
 ROOT="/workspace/ComfyUI"
 MODELS="$ROOT/models"
 CUSTOM="$ROOT/custom_nodes"
 
-mkdir -p "$MODELS/diffusion_models" "$MODELS/vae" "$MODELS/clip" "$MODELS/lora" "$CUSTOM"
-
-### MODEL DOWNLOADS
+mkdir -p "$MODELS/diffusion_models" "$MODELS/vae" "$MODELS/clip" "$MODELS/loras" "$CUSTOM"
 
 echo "📥 Downloading Flux Kontext model..."
-curl -L -H "Authorization: Bearer $HF_TOKEN" \
+curl --fail -L -H "Authorization: Bearer $HF_TOKEN" \
   https://huggingface.co/FluxML/flux-1-kontext-dev/resolve/main/flux-1-kontext-dev.safetensors \
   -o "$MODELS/diffusion_models/flux-1-kontext-dev.safetensors"
+du -h "$MODELS/diffusion_models/flux-1-kontext-dev.safetensors"
 
 echo "📥 Downloading VAE..."
-curl -L https://huggingface.co/madebyollin/vae-ft-mse-840000-ema-pruned/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors \
+curl --fail -L \
+  https://huggingface.co/madebyollin/vae-ft-mse-840000-ema-pruned/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors \
   -o "$MODELS/vae/vae-ft-mse-840000-ema-pruned.safetensors"
+du -h "$MODELS/vae/vae-ft-mse-840000-ema-pruned.safetensors"
 
-echo "📥 Downloading CLIP and OpenCLIP encoders..."
-curl -L https://huggingface.co/openai/clip-vit-large-patch14/resolve/main/model.safetensors \
+echo "📥 Downloading CLIP encoders..."
+curl --fail -L https://huggingface.co/openai/clip-vit-large-patch14/resolve/main/model.safetensors \
   -o "$MODELS/clip/clip-vit-large-patch14.safetensors"
-curl -L https://huggingface.co/stabilityai/clip-vit-large-patch14/resolve/main/model.safetensors \
+du -h "$MODELS/clip/clip-vit-large-patch14.safetensors"
+
+curl --fail -L https://huggingface.co/stabilityai/clip-vit-large-patch14/resolve/main/model.safetensors \
   -o "$MODELS/clip/openclip-vit-large-patch14.safetensors"
+du -h "$MODELS/clip/openclip-vit-large-patch14.safetensors"
 
 echo "📥 Downloading JD3 Nudify LoRA..."
-curl -L -H "Authorization: Bearer $HF_TOKEN" \
+curl --fail -L -H "Authorization: Bearer $HF_TOKEN" \
   https://huggingface.co/JD3GEN/JD3_Nudify_Kontext_LoRa/resolve/main/JD3s_Nudify_Kontext.safetensors \
-  -o "$MODELS/lora/JD3s_Nudify_Kontext.safetensors"
+  -o "$MODELS/loras/JD3s_Nudify_Kontext.safetensors"
+du -h "$MODELS/loras/JD3s_Nudify_Kontext.safetensors"
 
-### CUSTOM NODE INSTALLS
-
+### Custom Nodes
 cd "$CUSTOM"
 
-echo "🔌 Installing comfyui-flux-lora-loader..."
-git clone https://huggingface.co/FluxML/comfyui-flux-lora-loader || echo "Already exists."
+declare -A NODES=(
+  ["comfyui-flux-lora-loader"]="https://huggingface.co/FluxML/comfyui-flux-lora-loader"
+  ["comfyui-controlnet-aux"]="https://github.com/Fannovel16/comfyui_controlnet_aux"
+  ["comfyui-segment-anything"]="https://github.com/ltdrdata/ComfyUI-Segment-Anything"
+  ["comfyui-clipseg"]="https://github.com/toriato/ComfyUI-CLIPSeg"
+  ["comfyui-tea-seg"]="https://github.com/VerisimilitudeX/ComfyUI-TeaSeg"
+  ["comfyui-crystools"]="https://github.com/crystian/ComfyUI-Crystal-Tools"
+  ["rg3comfy"]="https://github.com/rgthree/rgthree-comfy"
+)
 
-echo "🔌 Installing comfyui-controlnet-aux..."
-git clone https://github.com/Fannovel16/comfyui_controlnet_aux || echo "Already exists."
+for name in "${!NODES[@]}"; do
+  if [ ! -d "$name" ]; then
+    echo "🔌 Cloning $name..."
+    git clone "${NODES[$name]}" "$name"
+  else
+    echo "✅ $name already installed."
+  fi
+done
 
-echo "🔌 Installing comfyui-segment-anything..."
-git clone https://github.com/ltdrdata/ComfyUI-Segment-Anything || echo "Already exists."
-
-echo "🔌 Installing comfyui-clipseg..."
-git clone https://github.com/toriato/ComfyUI-CLIPSeg || echo "Already exists."
-
-echo "🔌 Installing comfyui-tea-seg..."
-git clone https://github.com/VerisimilitudeX/ComfyUI-TeaSeg || echo "Already exists."
-
-echo "🔌 Installing Crystal Tools..."
-git clone https://github.com/crystian/ComfyUI-Crystal-Tools || echo "Already exists."
-
-echo "🔌 Installing RG3Comfy..."
-git clone https://github.com/rgthree/rgthree-comfy || echo "Already exists."
-
-### PYTHON DEPENDENCIES
-
+### Python packages
 echo "🐍 Installing xformers and SageAttention..."
 pip install --no-cache-dir xformers
 pip install --no-cache-dir git+https://github.com/THU-ML/SageAttention.git
 
-echo "✅ All models, nodes, and tools installed. Boot complete."
+echo "✅ Provisioning complete."
